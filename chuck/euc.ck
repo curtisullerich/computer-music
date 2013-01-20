@@ -1,59 +1,72 @@
-//this comment tricks gedit into highlighting this file like c
-Moog moog => ADSR e => dac;
-e.set(10::ms, 8::ms, .5, 200::ms);
-0.5 => moog.filterQ;
-0.0 => moog.filterSweepRate;
-0.0 => moog.lfoSpeed;
-0.2 => moog.lfoDepth;
-0.6 => moog.volume;
+class MySynth {
+	Moog moog => ADSR adsr => dac;
+	0.5 => moog.filterQ;
+	0.0 => moog.filterSweepRate;
+	0.0 => moog.lfoSpeed;
+	0.2 => moog.lfoDepth;
+	0.6 => moog.volume;
 
-Moog moog2 => ADSR e2 => dac;
-e2.set(10::ms, 8::ms, .5, 80::ms);
-0.5 => moog2.filterQ;
-0.0 => moog2.filterSweepRate;
-0.0 => moog2.lfoSpeed;
-0.2 => moog2.lfoDepth;
-0.6 => moog2.volume;
-//comment change
+	int rhythm[];
+	int note;
+	float velocity;
+	dur pulse;
 
-//generate an accent sequence
-bjorklund(8,3) @=> int rhythm[];
-<<< "bjorklund:" + arrcat(rhythm) >>>;
-bjorklund(7,5) @=> int rhythm2[];
-<<< "bjorklund:" + arrcat(rhythm2) >>>;
+  adsr.keyOff(); //so it doesn't play at the beginning
 
-0 => int k;
-
-while(true) {
-
-  //only play when the array element is high,
-  //to produce the rhythm
-  if (rhythm[k % rhythm.size()] == 1) {
-    play2(48, .8, moog); //using this function is trivial in this case
-                         //but necessary for adding melody later
-    e.keyOn();
-  }
-  if (rhythm2[ k % rhythm2.size()] == 1) {
-    play2(55, .6, moog2);
-    e2.keyOn();
+  fun static MySynth instance(int _note, float _velocity, dur _pulse, int _rhythm[]) {
+    MySynth m;
+    _note => m.note;
+    _velocity => m.velocity;
+    _pulse => m.pulse;
+    _rhythm @=> m.rhythm;
+    return m;
   }
 
-  //advance time
-  200::ms => now;
-  e.keyOff(); //is it bad practice to hit keyOff if there wasn't always
-  e2.keyOff();//a matching keyOn?
-  k++;
+	fun void startPlaying() {
+  	0 => int k;
+		while (true) {
+			if (rhythm[k % rhythm.size()] == 1) {
+				play(); //using this function is trivial in this case
+					 //but necessary for adding melody later
+				adsr.keyOn();
+			}
+
+			//advance time
+			pulse => now;
+			adsr.keyOff();
+			k++;
+		}
+	}
+
+	fun void play() {
+		Std.mtof(note) => moog.freq;
+		velocity => moog.noteOn;
+	}
 }
 
-fun void play( float note, float velocity, StifKarp inst) {
-  // start the note
-  Std.mtof( note ) => inst.freq;
-  velocity => inst.pluck;
-}
 
-fun void play2(float note, float velocity, Moog m) {
-  Std.mtof(55) => m.freq;
-  velocity => m.noteOn;
+fun static void main() {
+  MySynth moog[3];
+
+  MySynth.instance(41, .8, 200::ms, bjorklund(8,3)) @=> moog[0];
+  MySynth.instance(45, .8, 200::ms, bjorklund(7,4)) @=> moog[1];
+  MySynth.instance(48, .8, 200::ms, bjorklund(6,5)) @=> moog[2];
+
+  moog[0].adsr.set(10::ms, 8::ms, .5, 100::ms);
+  moog[1].adsr.set(10::ms, 8::ms, .5,  80::ms);
+  moog[2].adsr.set(10::ms, 8::ms, .5,  80::ms);
+
+  <<< "bjorklund:" + arrcat(moog[0].rhythm) >>>;
+  <<< "bjorklund:" + arrcat(moog[1].rhythm) >>>;
+  <<< "bjorklund:" + arrcat(moog[2].rhythm) >>>;
+
+  spork ~ moog[0].startPlaying();
+  spork ~ moog[1].startPlaying();
+  spork ~ moog[2].startPlaying();
+
+  while (true) {
+	  1::week => now;
+  }
 }
 
 //generate an accent pattern
@@ -139,3 +152,4 @@ fun void build(int level, int pattern[], int counts[], int remainders[]) {
   }  
   return;
 }
+main();
