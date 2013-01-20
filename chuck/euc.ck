@@ -14,6 +14,7 @@ e2.set(10::ms, 8::ms, .5, 80::ms);
 0.0 => moog2.lfoSpeed;
 0.2 => moog2.lfoDepth;
 0.6 => moog2.volume;
+//comment change
 
 //generate an accent sequence
 bjorklund(8,3) @=> int rhythm[];
