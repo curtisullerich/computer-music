@@ -1,4 +1,1 @@
-computer-music
-==============
-
-computer-music
+My experiments with computer music.
