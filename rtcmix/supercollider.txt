@@ -1,0 +1,5 @@
+http://supercollider.svn.sourceforge.net/viewvc/supercollider/trunk/common/build/Help/Tutorials/Getting-Started/Getting%20Started%20With%20SC.html
+http://music.dartmouth.edu/~cc11/code.list.html
+http://blog.artfwo.net/2008/05/supercollider-for-human-beings.html
+http://supercollider.sourceforge.net/learning/
+

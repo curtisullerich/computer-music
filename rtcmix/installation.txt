@@ -1,0 +1,35 @@
+I had a bit of trouble installing RTcmix on Ubuntu 12.10 64-bit.
+This is the process that finally worked for me. Hopefully it
+helps somebody else.
+
+cd /usr/local/src/
+sudo tar -xvf RTcmix-all.tar 
+sudo mv RTcmix-all-121412/ RTcmix
+cd RTcmix/
+locate print_libpython
+sudo cp src/parser/python/print_libpython.py src/parser/python/print_libpython.bak #just in case
+sudo gedit src/parser/python/print_libpython.py #paste in the file from Joel's fork at https://github.com/jwmatthys/rtcmix/blob/master/src/parser/python/print_libpython.py
+sudo ./configure --with-alsa --with-python=/usr/bin/python2.7 #or whatever python version you want
+sudo vim defs.conf #edit the OPT line to include -fPIC
+sudo make depend
+sudo make
+sudo make install
+
+#Add the followingto the end of ~/.bashrc:
+PATH=$PATH:/usr/local/src/RTcmix/bin
+export PATH
+
+#you may also want to add
+alias pycmix='PYCMIX'
+
+
+source ~/.bashrc
+CMIX < /usr/local/src/RTcmix/docs/sample_scores/WAVETABLE1.sco
+Also try if that presents an error, though the ~/.rtcmix should be handling this
+CMIX -D plughw < /usr/local/src/RTcmix/docs/sample_scores/WAVETABLE1.sco
+
+PYCMIX < any of the py scores in the repo
+
+--
+http://music.columbia.edu/pipermail/rtcmix-discuss/2007-July/002800.html
+http://createdigitalmusic.com/2011/03/circles-and-euclidian-rhythms-off-the-grid-a-few-music-makers-that-go-round-and-round/
