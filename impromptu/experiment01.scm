@@ -3,9 +3,9 @@
  (au:print-audiounits "aumu")
 ; setup simple au graph
 ; piano -> output
-;(define piano (au:make-node "aumu" "dls " "appl"))
+(define piano (au:make-node "aumu" "dls " "appl"))
 ;(define piano (au:make-node "aumu" "NiMa" "-NI-"))
-(define piano (au:make-node "aumu" "NiO5" "-NI-"))
+;(define piano (au:make-node "aumu" "NiO5" "-NI-"))
 (au:connect-node piano 0 *au:output-node* 0)
 (au:update-graph)
 (au:open-view piano)
@@ -67,31 +67,7 @@
     (let ((len (length lst)))
       (list-ref lst (random len)))))
 
-(define loop 
-  (lambda (time index)
-    (define pitches '(0 4 7 9 11 12 16 19 21 23 24))
-    ;(define pitches '(0 5 7 8 11 14 16 19 22))
-     ;(define pitches '(0))
-    (au:midi-out time piano *io:midi-cc* 0 10 (random 0 127))
-    ;(au:midi-out time piano *io:midi-cc* 0 10 0)
-     (let ((newindex (max 0 (min (- (length pitches) 1) (+ index (select-random '(-1 1) ))))))
-          (print newindex)
-             (play-note time piano 
-                     (+ 
-                        (list-ref pitches newindex)
-                        45
-                     )
-               80 10000
-             )
-   ; (au:midi-out (+ time (/ *second* 8notest)) piano *io:midi-cc* 0 10 127)
-    (if (eqv? (random 0 2) 0)
-      ;(play-note (+ time (/ *second* 8)) piano (+ 50 (select-random pitches)) 80 10000)
-    )
-    (callback (+ time (/ *second* 8)) 'loop (+ time (/ *second* 8)) newindex)        
-    );end of let
-  )
-)
-(loop (now) 0)
+
 
 
 
