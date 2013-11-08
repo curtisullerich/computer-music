@@ -15,14 +15,15 @@
 
 (define ostinato 
    (lambda (time note duration)
-      (play-note (*metro* time) piano (+ 40 note) 120 (*metro* 'dur duration) 0)
+      (play-note (*metro* time) piano (+ 40 note) 80 (*metro* 'dur duration) 0)
       (callback 
         (*metro* (+ time (* .5 duration))) 
         'ostinato 
           (+ time duration) 
           (random (cdr (assoc note '((0 5 7)
-                                     (7 0 5)
+                                     (7 0 5 11)
                                      (5 0)
+                                     (11 0)
                                     ))))
           duration
       )
@@ -30,6 +31,28 @@
 )
    
 (ostinato (*metro* 'get-beat) 0 4.0)
+
+(define bells
+   (lambda (time plist duration)
+      (play-note (*metro* time)         piano (list-ref plist 0) 120 (*metro* 'dur 3.0) 2)
+      (play-note (*metro* (+ time duration)) piano (list-ref plist 1) 120 (*metro* 'dur 2.5) 2)
+      (play-note (*metro* (+ time (* 2 duration))) piano (list-ref plist 2) 120 (*metro* 'dur 2.0) 2)
+   )
+)
+               
+(define belltones
+   (lambda (time)
+      (bells time (select-random '((64 71 67) (66 60 62) (58 60 62) (40 52 64))) 0.5)
+      (bells (+ time 2.0) (select-random '((64 71 67) (66 60 62) (58 60 62) (40 52 64))) 1.0)
+      (callback
+         (*metro* (+ time 4.0))
+         'belltones
+         (+ time 4.0)
+      )
+   )     
+)
+
+(belltones (*metro* 'get-beat))
    
 (define loop 
   (lambda (time index pan velocity duration)
@@ -77,7 +100,7 @@
 
 ;; beat loop with tempo shift
 (define drum-loop
-   (lambda (time duration)
+   (lambda (time duration)))
       (*metro* 'set-tempo (+ 120 (* 40 (cos (* .25 3.141592 time)))))
       ;(*metro* 'set-tempo 180)
       (play-note (*metro* time) piano 60 80 (*metro* 'dur duration))
