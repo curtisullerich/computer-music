@@ -1,11 +1,11 @@
 (au:clear-graph)
- (au:print-audiounits "aumu")
+(au:print-audiounits "aumu")
 ; setup simple au graph
 ; piano -> output
 ;(define piano (au:make-node "aumu" "dls " "appl"))
-;(define piano (au:make-node "aumu" "NiMa" "-NI-"))
+;(define massive (au:make-node "aumu" "NiMa" "-NI-"))
 (define piano (au:make-node "aumu" "NiO5" "-NI-"))
-(au:connect-node piano 1 *au:output-node* 0)
+(au:connect-node piano 0 *au:output-node* 0)
 (au:update-graph)
 (au:open-view piano)
 (define select-random
@@ -15,6 +15,7 @@
 
 (define ostinato 
    (lambda (time note duration)
+      (print time)
       (play-note (*metro* time) piano (+ 40 note) 80 (*metro* 'dur duration) 0)
       (callback 
         (*metro* (+ time (* .5 duration))) 
@@ -33,17 +34,17 @@
 (ostinato (*metro* 'get-beat) 0 4.0)
 
 (define bells
-   (lambda (time plist duration)
-      (play-note (*metro* time)         piano (list-ref plist 0) 120 (*metro* 'dur 3.0) 2)
-      (play-note (*metro* (+ time duration)) piano (list-ref plist 1) 120 (*metro* 'dur 2.5) 2)
-      (play-note (*metro* (+ time (* 2 duration))) piano (list-ref plist 2) 120 (*metro* 'dur 2.0) 2)
+   (lambda (time plist duration offset)
+      (play-note (*metro* time)         piano (+ offset (list-ref plist 0)) 120 (*metro* 'dur 3.0) 1)
+      (play-note (*metro* (+ time duration)) piano (+ offset (list-ref plist 1)) 120 (*metro* 'dur 2.5) 1)
+      (play-note (*metro* (+ time (* 2 duration))) piano (+ offset (list-ref plist 2)) 120 (*metro* 'dur 2.0) 1)
    )
 )
-               
+
 (define belltones
    (lambda (time)
-      (bells time (select-random '((64 71 67) (66 60 62) (58 60 62) (40 52 64))) 0.5)
-      (bells (+ time 2.0) (select-random '((64 71 67) (66 60 62) (58 60 62) (40 52 64))) 1.0)
+      (bells time (select-random '((64 71 67) (66 60 62) (58 60 62) (40 52 64))) 0.5 0)
+      (bells (+ time 2.0) (select-random '((64 71 67) (66 60 62) (58 60 62) (40 52 64))) 1.0 12)
       (callback
          (*metro* (+ time 4.0))
          'belltones
