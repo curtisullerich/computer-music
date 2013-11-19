@@ -187,7 +187,7 @@
 ;; arg 1: pitch to check against pc
 ;; arg 2: pc to check pitch against
 ;; 
-;; retuns true or false
+;; returns true or false
 ;;
 (define pc:?
    (lambda (pitch pc)
@@ -196,7 +196,7 @@
           #f))) 
 
 ;; quantize pc
-;; Always slelects a higher value before a lower value where distance is equal.
+;; Always selects a higher value before a lower value where distance is equal.
 ;;
 ;; arg 1: pitch to quantize to pc
 ;; arg 2: pc to quantize pitch against

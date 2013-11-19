@@ -13,13 +13,13 @@
     (let ((len (length ls)))
       (list-ref ls (random len)))))
 
-(define ostinato 
+(define bass 
    (lambda (time note duration)
       (print time)
       (play-note (*metro* time) piano (+ 40 note) 80 (*metro* 'dur duration) 0)
       (callback 
         (*metro* (+ time (* .5 duration))) 
-        'ostinato 
+        'bass 
           (+ time duration) 
           (random (cdr (assoc note '((0 5 7)
                                      (7 0 5 11)
@@ -30,8 +30,50 @@
       )
    )
 )
-   
-(ostinato (*metro* 'get-beat) 0 4.0)
+(bass (*metro* 'get-beat) 0 4.0)
+
+
+(define single
+   (lambda (time note duration)
+      (print "single")
+      (play-note (*metro* time) piano note 80 (*metro* 'dur duration) 0)
+    )
+)
+
+(define double
+   (lambda (time notes duration)
+      (print "double")
+      (play-note (*metro* time)              piano (+ 0 (list-ref notes 0)) 120 (*metro* 'dur 3.0) 0)
+      (play-note (*metro* (+ time (* .75 duration))) piano (+ 0 (list-ref notes 1)) 120 (*metro* 'dur 1.0) 0)
+   )
+)
+
+
+(define clarinet 
+   (lambda (time note duration)
+      ;(print time)
+      (if 
+         (< .5 (random))
+          (single time 50 duration)
+          (double time '(47 48) duration)
+      )
+      ;(double time '(47 44) duration)
+      (callback 
+        (*metro* (+ time (* .5 duration))) 
+        'clarinet 
+          (+ time duration) 
+          ;(random (cdr (assoc note '((0 5 7)
+          ;                           (7 0 5 11)
+          ;                           (5 0)
+          ;                           (11 0)
+          ;                          ))))
+          0
+          duration
+      )
+   )
+)
+(clarinet (*metro* 'get-beat) 0 4.0)
+
 
 (define bells
    (lambda (time plist duration offset)
@@ -41,19 +83,31 @@
    )
 )
 
-(define belltones
+(define eighths
    (lambda (time)
-      (bells time (select-random '((64 71 67) (66 60 62) (58 60 62) (40 52 64))) 0.5 0)
-      (bells (+ time 2.0) (select-random '((64 71 67) (66 60 62) (58 60 62) (40 52 64))) 1.0 12)
+      (bells time (select-random '((64 71 67) (66 60 62) (58 61 63) (40 52 64))) 0.5 0)
       (callback
          (*metro* (+ time 4.0))
-         'belltones
+         'eighths
          (+ time 4.0)
       )
    )     
 )
 
-(belltones (*metro* 'get-beat))
+(define halves
+   (lambda (time)
+      (bells (+ time 2.0) (select-random '((64 71 67) (67 58 62) (58 61 63) (40 52 64))) 1.0 12)
+      (callback
+         (*metro* (+ time 4.0))
+         'halves
+         (+ time 5.0)
+      )
+   )     
+)
+(help *metro*)
+
+(halves (*metro* 'get-beat))
+(eighths (*metro* 'get-beat))
    
 (define loop 
   (lambda (time index pan velocity duration)
@@ -72,7 +126,7 @@
         ;(newindex 0)
         (newpan 50)
       )
-      (print newindex)
+      ;(print newindex)
       (play-note (*metro* time) piano 
         (+ 
           (list-ref pitches newindex)
