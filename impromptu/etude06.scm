@@ -58,7 +58,7 @@
 
 (64 71 67) (66 60 62) (58 61 63) (40 52 64)
 (define tones
-   (lambda (time len root dur)
+   (lambda (time len root dur)))
       (bells time (random '((0 -7 -4) (0 7 3) (0 -7 -2) (-7 0 -4) (5 0 3) (-2 -7 3) (3 -2 0))) dur root len)
       (callback
          (*metro* (+ time (- len 0.05)))
@@ -69,17 +69,9 @@
 )
 
 (64 71 67) (67 58 62) (58 61 63) (40 52 64)
-(define halves
-   (lambda (time)))
-      (bells (+ time 2.0) (random '((0 -7 -4) (0 7 3) (0 -7 -2) (-7 0 -4) (5 0 3) (-2 -7 3) (3 -2 0))) 1.0 64 10)
-      (callback
-         (*metro* (+ time 6.5))
-         'halves
-         (+ time 7.0)
-      )
-   )     
-)
 (help *metro*)
 
 (tones (*metro* 'get-beat) 10 64 1.0)
-(tones (*metro* 'get-beat) 9 76 4.0)
+(tones (*metro* 'get-beat) 15 76 4.0)
+
+(tones (*metro* 'get-beat) 20 52 0.5)
