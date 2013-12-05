@@ -11,32 +11,54 @@
     (let ((len (length ls)))
       (list-ref ls (random len)))))
 
-
 (define drums 
-   (lambda (time duration)
-      (print time)
-      (play-note (*metro* time) piano 36 80 (*metro* 'dur duration) 2)
-      (play-note (*metro* (+ time (* duration .5))) piano 68 80 (*metro* 'dur duration) 2)
-      
+   (lambda (time duration)))
+      ;(print time)
+      ;(play-note (*metro2* time) ktk 36 80 (*metro2* 'dur duration) 2)
+      (play-note (*metro2* (+ time (* duration .5))) ktk 68 80 (*metro2* 'dur duration) 2)
+
       (if (or (*metre1* time 2.0) (*metre1* time 4.0))
           (begin
-            (play-note (*metro* time) piano 40 80 (*metro* 'dur duration) 2)
+            ;(play-note (*metro2* time) ktk 40 80 (*metro2* 'dur duration) 2)
           )
       )
-                 
+      
       (callback 
-        (*metro* (+ time 1.0)) 
+        (*metro2* (+ time 1.0)) 
         'drums 
           (+ time duration) 
           duration
       )
    )
 )
+(define drums2 
+   (lambda (time duration)))
+      ;(print time)
+      (play-note (*metro* time) ktk 36 80 (*metro* 'dur duration) 2)
+      ;(play-note (*metro* (+ time (* duration .5))) ktk 68 80 (*metro* 'dur duration) 2)
+      
+      (if (or (*metre2* time 2.0) (*metre2* time 4.0))
+          (begin
+            (play-note (*metro* time) ktk 40 80 (*metro* 'dur duration) 2)
+          )
+      )
+                 
+      (callback 
+        (*metro* (+ time 1.0)) 
+        'drums2 
+          (+ time duration) 
+          duration
+      )
+   )
+)
 (drums (*metro* 'get-beat) 1.0)
-(define *metre1* (make-metre '(4) 1.0))
+(drums2 (*metro2* 'get-beat) 1.0)
+(define *metre1* (make-metre '(2) 1.0))
+(define *metre2* (make-metre '(3 2 3) 1.0))
    
 ;; create a metronome starting at 120 bpm
-(define *metro* (make-metro 120))
+(define *metro* (make-metro 99))
+(define *metro2* (make-metro 100))
 
 
 

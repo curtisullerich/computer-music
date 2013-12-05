@@ -90,7 +90,7 @@
 )
 
 (define melody
-   (lambda (beat duration p)
+   (lambda (beat duration p))
       (play-note (*metro* beat) ktk p 80 (*metro* 'dur duration) 0)
       (callback 
         (*metro* (+ beat duration))

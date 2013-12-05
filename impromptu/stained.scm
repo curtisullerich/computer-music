@@ -1,0 +1,40 @@
+(au:clear-graph)
+(define ktk (au:make-node "aumu" "NiO5" "-NI-"))
+(au:connect-node ktk 0 *au:output-node* 0)
+(au:update-graph)
+(au:open-view ktk)
+;; stained
+(define *scale* (pc:scale 0 'aeolian))
+(define *metro* (make-metro 100))
+;(pc:cb bones dur)
+(define bones
+   (lambda (beat dur)
+      (for-each (lambda (p)
+                   (play ktk p 30 (* .9 dur) 0)); (if (= dur 3) 1 0)))
+                (pc:make-chord 60 65 1 (if (= dur 3)
+                                       '(0 3 7)
+                                       (random '((5 8 0) (2 5 8))))))
+;                (pc:make-chord 52 65 2 '(0 3 7)))
+      
+      (callback (*metro* (+ beat (* .95 dur))) 'bones (+ beat dur)
+      (if (= dur 3) 1 3))))
+(bones (*metro* 'get-beat 4.0) 3)
+
+(define trps
+   (lambda (beat dur)
+      (for-each (lambda (p)
+                   (play ktk p 30 (* .9 dur) 1));(if (= dur 3) 3 1)))
+                (pc:make-chord 65 73 1 (random '((0 3 7) (8 0 3)))))
+      (callback (*metro* (+ beat (* .95 dur))) 'trps (+ beat dur)
+      (if (= dur 3) 1 3))))
+(trps (+ 1 (*metro* 'get-beat 4.0)) 3)
+   
+(define bells
+   (lambda (beat)
+      (print beat)
+      (case (fmod beat 8)
+            ((0 3 7)
+             ;(set-obj-for-key! "inputIntensity" 0 fparams1)
+             (play ktk 60 60 3 2))))
+      (callback (*metro* (+ beat (* beat (* .5 0.125))) 'bells (+ beat 0.125))))
+(bells (*metro* 'get-beat 1 ))
