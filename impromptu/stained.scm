@@ -7,6 +7,7 @@
 (define *scale* (pc:scale 0 'aeolian))
 (define *metro* (make-metro 100))
 ;(pc:cb bones dur)
+(pc:make-chord 60 65 1 '(0 3 7))
 (define bones
    (lambda (beat dur)
       (for-each (lambda (p)

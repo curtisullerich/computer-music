@@ -6,11 +6,6 @@
 (au:update-graph)
 (au:open-view piano)
 
-(define select-random
-  (lambda (ls)
-    (let ((len (length ls)))
-      (list-ref ls (random len)))))
-
 (define drums 
    (lambda (time duration)))
       ;(print time)

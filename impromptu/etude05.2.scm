@@ -37,15 +37,14 @@
 (play-note (now) btry *kick2* 100 (*metro* 'dur 1) 0)
 (define tomloop
    (lambda (beat)
-      ;(print beat)
       (if (*metre* beat 1)
           (play-note (*metro* beat) btry (if (< (random) .2) *kick2* *kick1*) 120 (*metro* 'dur 1) 0)
       )
-      (play-note (*metro* beat) btry
-         (random '(36 37 39 40 41 42 45 46 50 61))
-         (- (random '(70 80 100 110)) 0)
-         (*metro* 'dur 1.0)
-         0
+      (play-note (*metro* (+ 0 beat)) btry
+        (random '(36 37 39 40 41 42 45 46 50 61))
+        (- (random '(70 80 90 100 110)) 0)
+        (*metro* 'dur 1.0)
+        0
       )
       (let
          (

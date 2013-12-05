@@ -8,10 +8,6 @@
 (au:connect-node ktk 0 *au:output-node* 0)
 (au:update-graph)
 (au:open-view ktk)
-(define select-random
-  (lambda (ls)
-    (let ((len (length ls)))
-      (list-ref ls (random len)))))
 
 (define bass 
    (lambda (time note duration)
