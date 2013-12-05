@@ -21,7 +21,7 @@
 (define bass
   (lambda (beat duration root chord)
     (play-note (*metro* beat) ktk (+ root (car (pc:chord root chord))) 80 (*metro* 'dur duration) 0)
-    (tenor beat duration root chord)
+    ;(tenor beat duration root chord)
   )
 )
 ; play half notes on 1 and 3, selected randomly from the diatonic major chord given the root note and scale degree played by the bass

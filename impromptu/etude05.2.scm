@@ -1,5 +1,5 @@
-(define loop
-   (lambda (beat)
+(define drum-loop
+   (lambda (beat)))
      (print beat)
      (if (*metre* beat 1)
        (begin
@@ -30,7 +30,7 @@
          ;(fill2 (+ beat (random '( 2.5 3 3.5))))
      )
      
-     (callback (*metro* (+ beat 3.95)) 'loop (+ beat 1.0))
+     (callback (*metro* (+ beat 3.95)) 'drum-loop (+ beat 1.0))
    )
 )
 
@@ -48,7 +48,7 @@
       )
       (let
          (
-           (x (if (< (random) .7) 0.5 1))
+           (x (if (< (random) .7) 1 .5))
          )
          (callback (*metro* (+ beat (- x .05))) 'tomloop (+ beat x))
       )
@@ -58,4 +58,4 @@
 (tomloop (*metro* 'get-beat))
 (help *metre*)
 (define *metre* (make-metre '(3 2) 1.0))
-(loop (*metro* 'get-beat))
+(drum-loop (*metro* 'get-beat))

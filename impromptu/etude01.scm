@@ -145,10 +145,6 @@
 )
 (loop (*metro* 'get-beat) 0 50 80 .25)
 
-
-
-
-
 ;; create a metronome starting at 120 bpm
 (define *metro* (make-metro 110))
 
