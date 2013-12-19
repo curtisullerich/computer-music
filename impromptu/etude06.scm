@@ -1,10 +1,3 @@
-
-(define pc-from-degree
-   (lambda (degree)
-     (car (cdr (assoc degree *pc:diatonic-minor*)))
-   )
-)
-
 ; use a markov chain to select the next chord
 (define nextchord
    (lambda (chord)
@@ -17,7 +10,6 @@
                                   (vii7 i)))))
    )
 )
-
 
 (for-each (lambda (p)
       (play-note (now) ktk (+ 60 p) 80 (*metro* 'dur 4.0) 0))
@@ -49,29 +41,59 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define bells
-   (lambda (time plist duration offset len)
-      (play-note (*metro* time)         ktk (+ offset (list-ref plist 0)) 120 (*metro* 'dur len) 1)
-      (play-note (*metro* (+ time duration)) ktk (+ offset (list-ref plist 1)) 120 (*metro* 'dur (- len duration)) 1)
-      (play-note (*metro* (+ time (* 2 duration))) ktk (+ offset (list-ref plist 2)) 120 (*metro* 'dur (- len (* 2 duration))) 1)
+   (lambda (time plist duration offset len inst)
+      (play-note (*metro* time)         ktk (+ offset (list-ref plist 0)) (random '(90 100 110)) (*metro* 'dur len) inst)
+      (play-note (*metro* (+ time duration)) ktk (+ offset (list-ref plist 1)) (random '(90 100 110)) (*metro* 'dur (- len duration)) inst)
+      (play-note (*metro* (+ time (* 2 duration))) ktk (+ offset (list-ref plist 2)) (random '(90 100 110)) (*metro* 'dur (- len (* 2 duration))) inst)
    )
 )
 
 (64 71 67) (66 60 62) (58 61 63) (40 52 64)
-(define tones
-   (lambda (time len root dur)))
-      (bells time (random '((0 -7 -4) (0 7 3) (0 -7 -2) (-7 0 -4) (5 0 3) (-2 -7 3) (3 -2 0))) dur root len)
-      (callback
+(define tones)
+   (lambda (time len root dur inst)
+      (bells time (random '((0 -7 -4) (0 7 3) (0 -7 -2) (-7 0 -4) (5 0 3) (-2 -7 3) (3 -2 0))) dur root len inst)
+      (if (<> inst -1)
+        (callback
          (*metro* (+ time (- len 0.05)))
          'tones
          (+ time len) len root dur
+         inst
+        )
       )
-   )     
+   )      
 )
 
 (64 71 67) (67 58 62) (58 61 63) (40 52 64)
-(help *metro*)
+(tones (*metro* 'get-beat) 10 52 1.0 6)
+(tones (*metro* 'get-beat) 15 64 4.0 4)
+(tones (*metro* 'get-beat) 20 40 0.5 5)
 
-(tones (*metro* 'get-beat) 10 64 1.0)
-(tones (*metro* 'get-beat) 15 76 4.0)
+(define bung)
+   (lambda (time len root dur)
+        (play-note (*metro* time) ktk root 110 (*metro* 'dur len) 6)
+        (callback
+         (*metro* (+ time (- len 0.05)))
+         'bung
+         (+ time len) len root dur
+        )     
+   )
+)
 
-(tones (*metro* 'get-beat) 20 52 0.5)
+(bung (*metro* 'get-beat) 11 52 1)
+
+(define bass
+   (lambda (beat)
+      (play-note (*metro* beat) ktk (+ (random '(-2 0 2 0 3 7 7 -4 12)) 52) 120 (*metro* 'dur .25) 5)
+      (let
+         ( 
+           (b (random '(1/2 1/2 1/2 1/2 1/2 1/2 2/2)))
+         )
+         (print b)
+         (callback (*metro* (+ beat (- b 0.05))) 'bass (+ beat b))
+     )
+   )
+)
+(bass (*metro* 'get-beat))
+
+      
+      

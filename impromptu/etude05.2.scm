@@ -34,21 +34,32 @@
    )
 )
 
+
+(define metup)
+   (lambda (tempo beat)
+      (*metro* 'set-tempo (+ 1 (*metro* 'get-tempo)))
+      (callback (*metro* (+ beat 2.9)) 'metup (+ tempo 3) (+ beat 3))
+   )
+)
+(*metro* 'get-tempo)
+(*metro* 'set-tempo 120)
+(metup (*metro* 'get-tempo) (*metro* 'get-beat))
+
 (play-note (now) btry *kick2* 100 (*metro* 'dur 1) 0)
-(define tomloop
+(define tomloop)
    (lambda (beat)
-      (if (or (*metre* beat 1) (*metre* beat  4))
-          (play-note (*metro* beat) btry (if (< (random) .2) *kick3* *kick4*) 120 (*metro* 'dur 1) 0)
+      (if (or (*metre* beat 4) (*metre* beat 1))
+        ;(play-note (*metro* beat) btry (if (< (random) .3) *kick3* *kick4*) 70 (*metro* 'dur 1) 0)
       )
       (play-note (*metro* (+ 0 beat)) btry
-        (random '(36 37 39 40 41 42 45 46 50 61))
-        (- (random '(70 80 90 100 110)) 0)
+        (random '(36 37 39 40 41 42 45 46 50 61));drum
+        (- (random '(70 80 90 100 110)) -20) ;volume
         (*metro* 'dur 1.0)
         0
       )
       (let
          (
-           (x (if (< (random) .85) .5 (if (< (random) .7) 1 2)))
+           (x (if (< (random) .85) .5 (if (< (random) .7) 1 1.5)))
          )
          (callback (*metro* (+ beat (- x .05))) 'tomloop (+ beat x))
       )
@@ -56,6 +67,4 @@
 )
 
 (tomloop (*metro* 'get-beat))
-(help *metre*)
-(define *metre* (make-metre '(4) 1.0))
 (drum-loop (*metro* 'get-beat))
