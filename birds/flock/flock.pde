@@ -43,9 +43,12 @@ class Boid {
   // Beads
   Reverb reverb;
   Panner pan;
-  Glide xPos;
+  Glide panValue;
   Gain synthGain;
   SamplePlayer wing;
+  Glide playbackRate;
+  OnePoleFilter filter;
+  Glide cutoff;
 
   int trigger_ms = millis();
   int duration_ms = 4000;
@@ -84,18 +87,23 @@ class Boid {
       e.printStackTrace();
       exit();
     }
+    playbackRate = new Glide(ac, 1, 30);
+    wing.setRate(playbackRate);
     wing.setKillOnEnd(false);
 
+    cutoff = new Glide(ac, 200, 50);
+    filter = new OnePoleFilter(ac, cutoff);
     reverb = new Reverb(ac, 1);
     reverb.setSize(0.7);
     reverb.setDamping(0.9);
     reverb.setEarlyReflectionsLevel(.1);
     reverb.setLateReverbLevel(.9);
     synthGain = new Gain(ac, 1, .8);
-    xPos = new Glide(ac, position.x, 50);
-    pan = new Panner(ac, xPos);
+    panValue = new Glide(ac, position.x, 50);
+    pan = new Panner(ac, panValue);
     pan.addInput(wing);
-    synthGain.addInput(pan);
+    filter.addInput(pan);
+    synthGain.addInput(filter);
     reverb.addInput(synthGain);
     ac.out.addInput(reverb);
     ac.out.addInput(synthGain);
@@ -130,9 +138,11 @@ class Boid {
 
   void articulate() {
     if (millis() > trigger_ms) {
+      playbackRate.setValue(map((float)Math.random(), 0, 1, .1, 1));
+      cutoff.setValue(map(position.y, 0, height, 100, 20000));
       wing.setToLoopStart();
       wing.start();
-      trigger_ms = millis() + ((int)(random(2)*1000)) + 3000;
+      trigger_ms = millis() + (int)map((float)Math.random(), 0, 1, 3000, 8000);
     }
   }
 
@@ -145,14 +155,7 @@ class Boid {
     position.add(velocity);
     // Reset accelertion to 0 each cycle
     acceleration.mult(0);
-    float amp;
-    if (position.x < width/2.0) {
-      amp = map(position.x, 0, width/2.0, .2, .95);
-    } else {
-      amp = map(position.x, width/2.0, width, .95, .2);
-    }
-    xPos.setValue(-1. + 2.*position.x/width);
-    //wave.amp(amp); // Note: Setting the amplitude here messes with articulate() and maybe makes things choppy.
+    panValue.setValue(map(position.x, 0, width, -1, 1));
     articulate();
   }
 
