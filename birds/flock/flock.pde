@@ -1,11 +1,13 @@
-
-import processing.sound.*;
+import beads.*;
+AudioContext ac;
 
 Flock flock;
 
 void setup() {
   size(1500, 750);
+  ac = new AudioContext();
   flock = new Flock();
+  ac.start();
 }
 
 void draw() {
@@ -17,7 +19,6 @@ void draw() {
 void mousePressed() {
   flock.addBoid(new Boid(this, mouseX, mouseY));
 }
-
 
 // The Flock (a list of Boid objects)
 class Flock {
@@ -36,18 +37,23 @@ class Flock {
   void addBoid(Boid b) {
     boids.add(b);
   }
-
 }
 
-
-// The Boid class
 class Boid {
-  Oscillator wave;
-  Env env;
+  // Beads
+  WavePlayer modulator;
+  Glide modulatorFrequency;
+  WavePlayer carrier;
+  Reverb reverb;
+  Panner pan;
+  Glide xPos;
+  Envelope envelope;
+  Gain synthGain;
+
   int trigger_ms = millis();
   int duration_ms = 4000;
-  float frequency;
-  float detune;
+
+  // Physics
   PVector position;
   PVector velocity;
   PVector acceleration;
@@ -71,19 +77,31 @@ class Boid {
     r = 2.0;
     maxspeed = 2;
     maxforce = 0.03;
-    env = new Env(parent);
-    wave = new SinOsc(parent);
-    //int rand = (int)random(4);
-    //switch (rand) {
-    //  case 0: wave = new TriOsc(parent); break;
-    //  case 1: wave = new SinOsc(parent); break;
-    //  case 2: wave = new SawOsc(parent); break;
-    //  case 3: wave = new SqrOsc(parent); break;
-    //}
 
-    frequency = getFrequency(y);
-    detune = getDetune(x);
-    wave.freq(frequency * (detune));
+    modulatorFrequency = new Glide(ac, 20, 30);
+    modulator = new WavePlayer(ac, modulatorFrequency, Buffer.SINE);
+    Function frequencyModulation = new Function(modulator)
+    {
+      public float calculate() {
+        // return x[0], scaled into an appropriate frequency range
+        return (x[0] * 100.0) + position.y;
+      }
+    };
+    carrier = new WavePlayer(ac, frequencyModulation, Buffer.SINE);
+    reverb = new Reverb(ac, 1);
+    reverb.setSize(0.7);
+    reverb.setDamping(0.9);
+    reverb.setEarlyReflectionsLevel(.1);
+    reverb.setLateReverbLevel(.9);
+    envelope = new Envelope(ac, 0.0);
+    synthGain = new Gain(ac, 1, envelope);
+    xPos = new Glide(ac, position.x, 50);
+    pan = new Panner(ac, xPos);
+    pan.addInput(carrier);
+    synthGain.addInput(pan);
+    reverb.addInput(synthGain);
+    ac.out.addInput(reverb);
+    ac.out.addInput(synthGain);
   }
 
   void run(ArrayList<Boid> boids) {
@@ -113,31 +131,17 @@ class Boid {
     applyForce(coh);
   }
 
-  float getDetune(float x) {
-    return map(x, 0, width, .985, 1.015);
-  }
-
-  float getFrequency(float y) {
-    float options[] = {220, 440, 528, 660, 880}; 
-    int rand = (int)random(options.length);
-    return options[rand];
-    //return pow(1000, map(y, 0, height, 0, 1)) + 150;
-  }
-
   void articulate() {
     if (millis() > trigger_ms) {
-      wave.pan(map(position.x, 0, width, -.95, .95));
-      wave.play();
-      float attackTime = 0.1;
-      float sustainTime = 0.2;
-      float sustainLevel = 0.3;
-      float releaseTime = 2.0;
-      env.play(wave, attackTime, sustainTime, sustainLevel, releaseTime);
+      envelope.addSegment(0.8, 50); // over 50 ms rise to 0.8
+      envelope.addSegment(0.6, 50); // over 300 ms return to 0.0
+      envelope.addSegment(0.6, 400); // over 300 ms return to 0.0
+      envelope.addSegment(0.0, 400); // over 300 ms return to 0.0
       trigger_ms = millis() + ((int)(random(2)*1000)) + 3000;
-    }    
+    }
   }
 
-  // Method to update position
+  // Called in draw().
   void update() {
     // Update velocity
     velocity.add(acceleration);
@@ -146,18 +150,16 @@ class Boid {
     position.add(velocity);
     // Reset accelertion to 0 each cycle
     acceleration.mult(0);
-    //frequency = getFrequency(position.x);
-    //detune = getDetune(position.y);
-    //wave.freq(frequency);
-    //wave.pan(map(position.x, 0, width, -.95, .95));
     float amp;
     if (position.x < width/2.0) {
       amp = map(position.x, 0, width/2.0, .2, .95);
     } else {
       amp = map(position.x, width/2.0, width, .95, .2);
     }
-    articulate();
+    modulatorFrequency.setValue(position.x);
+    xPos.setValue(-1. + 2.*position.x/width);
     //wave.amp(amp); // Note: Setting the amplitude here messes with articulate() and maybe makes things choppy.
+    articulate();
   }
 
   // A method that calculates and applies a steering force towards a target
@@ -182,7 +184,7 @@ class Boid {
     // Draw a triangle rotated in the direction of velocity
     float theta = velocity.heading2D() + radians(90);
     // heading2D() above is now heading() but leaving old syntax until Processing.js catches up
-    
+
     fill(200, 100);
     stroke(255);
     pushMatrix();
@@ -203,9 +205,9 @@ class Boid {
 
   void reflectBorders() {
     if (position.x+velocity.x < -r || position.x+velocity.x > width+r) velocity.x*=-1;
-    if (position.y+velocity.y < -r || position.y+velocity.y > height+r) velocity.y *=-1; 
+    if (position.y+velocity.y < -r || position.y+velocity.y > height+r) velocity.y *=-1;
   }
-  
+
   void wrapBorders() {
     if (position.x < -r) position.x = width+r;
     if (position.y < -r) position.y = height+r;
