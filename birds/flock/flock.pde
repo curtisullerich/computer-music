@@ -41,14 +41,11 @@ class Flock {
 
 class Boid {
   // Beads
-  WavePlayer modulator;
-  Glide modulatorFrequency;
-  WavePlayer carrier;
   Reverb reverb;
   Panner pan;
   Glide xPos;
-  Envelope envelope;
   Gain synthGain;
+  SamplePlayer wing;
 
   int trigger_ms = millis();
   int duration_ms = 4000;
@@ -78,26 +75,26 @@ class Boid {
     maxspeed = 2;
     maxforce = 0.03;
 
-    modulatorFrequency = new Glide(ac, 20, 30);
-    modulator = new WavePlayer(ac, modulatorFrequency, Buffer.SINE);
-    Function frequencyModulation = new Function(modulator)
-    {
-      public float calculate() {
-        // return x[0], scaled into an appropriate frequency range
-        return (x[0] * 100.0) + position.y;
-      }
-    };
-    carrier = new WavePlayer(ac, frequencyModulation, Buffer.SINE);
+    try {
+      String sourceFile = sketchPath("") + "wing.wav";
+      wing = new SamplePlayer(ac, new Sample(sourceFile));
+    }
+    catch(Exception e) {
+      println("Exception while attempting to load sample!");
+      e.printStackTrace();
+      exit();
+    }
+    wing.setKillOnEnd(false);
+
     reverb = new Reverb(ac, 1);
     reverb.setSize(0.7);
     reverb.setDamping(0.9);
     reverb.setEarlyReflectionsLevel(.1);
     reverb.setLateReverbLevel(.9);
-    envelope = new Envelope(ac, 0.0);
-    synthGain = new Gain(ac, 1, envelope);
+    synthGain = new Gain(ac, 1, .8);
     xPos = new Glide(ac, position.x, 50);
     pan = new Panner(ac, xPos);
-    pan.addInput(carrier);
+    pan.addInput(wing);
     synthGain.addInput(pan);
     reverb.addInput(synthGain);
     ac.out.addInput(reverb);
@@ -133,10 +130,8 @@ class Boid {
 
   void articulate() {
     if (millis() > trigger_ms) {
-      envelope.addSegment(0.8, 50); // over 50 ms rise to 0.8
-      envelope.addSegment(0.6, 50); // over 300 ms return to 0.0
-      envelope.addSegment(0.6, 400); // over 300 ms return to 0.0
-      envelope.addSegment(0.0, 400); // over 300 ms return to 0.0
+      wing.setToLoopStart();
+      wing.start();
       trigger_ms = millis() + ((int)(random(2)*1000)) + 3000;
     }
   }
@@ -156,7 +151,6 @@ class Boid {
     } else {
       amp = map(position.x, width/2.0, width, .95, .2);
     }
-    modulatorFrequency.setValue(position.x);
     xPos.setValue(-1. + 2.*position.x/width);
     //wave.amp(amp); // Note: Setting the amplitude here messes with articulate() and maybe makes things choppy.
     articulate();
