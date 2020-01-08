@@ -7,7 +7,9 @@ WavePlayer modulator;
 Glide modulatorFrequency;
 WavePlayer carrier;
 Gain synthGain;
-Glide amplitude;
+Glide pressure;
+Glide onOff;
+Reverb reverb;
 
 void setup() {
   size(640, 480);
@@ -20,13 +22,23 @@ void setup() {
       return map(x[0], 0, 1, 10, 100+mouseY);
     }
   };
+  pressure = new Glide(ac, 0, 50);
+  onOff = new Glide(ac, 0, 50);
+  Function mult = new Function(onOff, pressure)
+  {
+    public float calculate() {
+      return x[0]*x[1];
+    }
+  };
   carrier = new WavePlayer(ac, frequencyModulation, Buffer.SINE);
-  amplitude = new Glide(ac, 0, 50);
-  synthGain = new Gain(ac, 1, amplitude);
+  synthGain = new Gain(ac, 1, mult);
   synthGain.addInput(carrier);
+  reverb = new Reverb(ac, 1);
+  reverb.addInput(synthGain);
+  ac.out.addInput(reverb);
   ac.out.addInput(synthGain);
-  ac.start();
   tablet = new Tablet(this); 
+  ac.start();
 
   background(0);
   stroke(255);
@@ -34,14 +46,17 @@ void setup() {
 
 void draw() {
   strokeWeight(30 * tablet.getPressure());
+  float r = map(tablet.getAltitude(), 0, PI/2, 255, 0);
+  stroke(r, r, r);
   line(pmouseX, pmouseY, mouseX, mouseY);
   modulatorFrequency.setValue(mouseX);
+  pressure.setValue(tablet.getPressure());
 }
 
 void mousePressed() {
-  amplitude.setValue(.9);
+  onOff.setValue(1);
 }
 
 void mouseReleased() {
-  amplitude.setValue(0);
+  onOff.setValue(0);
 }
