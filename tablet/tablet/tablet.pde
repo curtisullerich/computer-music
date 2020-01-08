@@ -8,8 +8,8 @@ Glide modulatorFrequency;
 WavePlayer carrier;
 Gain synthGain;
 Glide pressure;
-Glide onOff;
 Reverb reverb;
+Envelope envelope;
 
 void setup() {
   size(640, 480);
@@ -23,8 +23,8 @@ void setup() {
     }
   };
   pressure = new Glide(ac, 0, 50);
-  onOff = new Glide(ac, 0, 50);
-  Function mult = new Function(onOff, pressure)
+  envelope = new Envelope(ac, 0.);
+  Function mult = new Function(envelope, pressure)
   {
     public float calculate() {
       return x[0]*x[1];
@@ -54,9 +54,10 @@ void draw() {
 }
 
 void mousePressed() {
-  onOff.setValue(1);
+  envelope.addSegment(0.95, 50);
+  envelope.addSegment(0.7, 50);
 }
 
 void mouseReleased() {
-  onOff.setValue(0);
+  envelope.addSegment(0., 100);
 }
