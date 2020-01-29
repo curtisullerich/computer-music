@@ -1,7 +1,7 @@
 import beads.*;
 import codeanticode.tablet.*;
 
-class Instrument {
+class Brush {
   AudioContext ac;
   Tablet tablet;
   WavePlayer modulator;
@@ -12,7 +12,7 @@ class Instrument {
   Reverb reverb;
   Envelope envelope;
 
-  Instrument(AudioContext ac, Tablet tablet) {
+  Brush(AudioContext ac, Tablet tablet) {
     this.ac = ac;
     this.tablet = tablet;
     this.modulatorFrequency = new Glide(this.ac, 20, 30);
