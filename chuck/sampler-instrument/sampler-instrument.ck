@@ -185,7 +185,6 @@ class Builder {
       matches[1] => string noteStr;
       noteStr.toInt() => int note;
       if (note == 0) { continue; } // TODO why not die here?
-      // <<< "match ", note, phase >>>;
       SndBuf buf;
       buf => bufConsumer;
       1 => buf.gain;
@@ -220,13 +219,11 @@ class Builder {
       noteStr.toInt() => int note;
       matches[2] => string phase;
       if (note == 0) { continue; }
-      // <<< "match ", note, phase >>>;
       if (phase != "attack" && phase != "sustain") {
         <<< "unexpected file type", phase >>>;
         me.exit();
       }
       SndBuf buf;
-      // buf => adsr; TODO need to be able to set up thee connections on the instance
       buf => bufConsumer;
       1 => buf.gain;
       0 => buf.rate; // pause them
@@ -389,115 +386,3 @@ class NearestNeighborMap {
     me.exit();
   }
 }
-
-// Everything below here is test code.
-
-// SamplerInstrument.builder()
-//                  // TODO I could support limited syntax here for picking which parts match what, like MIDI=>([0-9]+)
-//                  .attackPattern("^([0-9]+)-attack.wav$")
-//                  .sustainPattern("^([0-9]+)-sustain.wav$")
-//                  .monophonic()
-//                  .build() @=> SamplerInstrument inst;
-SamplerInstrument.builder()
-                 .oneshotPattern("^([1-9][1-9]).wav$")
-                 .monophonic()
-                 .build() @=> SamplerInstrument inst;
-inst => dac;
-// SinOsc sin => dac;
-// 440 => sin.freq;
-// inst => FFT fft =^ Centroid cent => blackhole;
-// 1024 => fft.size;
-// Windowing.hann(fft.size()/2) => fft.window;
-second / samp => float srate;
-inst => FFT fft =^ AutoCorr cor => blackhole;
-// true => cor.normalize;
-// SinOsc sin => FFT fft2 =^ cor;
-// 100 => sin.freq;
-1024 => fft.size;
-Windowing.hamming( fft.size() ) => fft.window;
-<<< srate, "samples/second" >>>;
-
-// Plot Plot;
-// float array[512];
-// for(0 => int c; c < 512; c++) {
-//     Math.cos(2*Math.PI*(c/511.)) => array[c];
-// }
-// "cosine" => Plot.title;
-// Plot.plot(array);
-// 1.1::second => now;
-
-
-/*
-spork ~go();
-for (58 => int i; i < 82; i++) {
-  spork ~ inst.play(i);
-  // Std.mtof(i) => sin.freq;
-  // now + 400::ms => time wait;
-  // while (now < wait);
-  // 1000::ms => now;
-  1000::ms => now;
-}
-*/
-
-
-// Machine.add("./samples/plot/Plot.ck");
-// TODO why does this always report 0 for the first few notes before kicking in?
-// true => Plot.export;
-fun void go() {
-  UAnaBlob fftblob;
-  UAnaBlob blob;
-  while (true) {
-    // srate/fft.size() * divv++ => g.freq;
-    fft.upchuck() @=> fftblob;
-    cor.upchuck() @=> blob;
-    // <<< "sizes", fftblob.fvals().size(), blob.fvals().size() >>>;
-    0 => float max; int where;
-    // for (int i; i < fftblob.fvals().size(); i++) {
-    //   if (fftblob.fvals()[i] > max) {
-    //     fftblob.fvals()[i] => max;
-    //     i => where;
-    //   }
-    // }
-    // "fft" => Plot.title;
-    // Plot.plot(fftblob.fvals());
-    // "autocorr" => Plot.title;
-    // Plot.plot(blob.fvals());
-    // Plot.record(inst, 200::ms);
-
-    // set freq
-    // ((where$float) / fft.size()) * srate => float hz;
-    // <<< hz, "hz", Std.ftom(hz), "note" >>>;
-    // fft.spectrum(s);
-    // cent.fval(0) * srate / 2 => float hz;
-    // <<< hz, Std.ftom(hz) >>>;
-    // <<< fft.cval(0)$polar, fft.cval(1)$polar, fft.cval(2)$polar, fft.cval(3)$polar >>>;
-    // <<< fft.transform().size() >>>;
-    string s;
-
-    // only check bins betwen 20hz and 16khz
-    // .05s and .0000625s
-    // srate/20 and srate/16000 samples
-    // (srate/Std.mtof(90))$int => int maxI;
-    0 => int maxI;
-    0 => float sum;
-    string larges;
-    // for (maxI => int j; j < blob.fvals().size(); j++) {
-    //   if (blob.fval(j) > blob.fval(maxI)) {
-    //     j => maxI;
-    //   }
-    //   if (blob.fval(j) > blob.fval(0)/2) {
-    //     larges + j + " " => larges;
-    //   }
-    //   s + blob.fval(j) + " " => s;
-    //   sum+blob.fval(j) => sum;
-    // }
-    // <<< "max bin", maxI, "=", blob.fval(maxI), ". magnitude =", (srate/maxI)$int, "hz = note", Std.ftom(srate/maxI), ". sum=", sum >>>;
-    // <<< s >>>;
-    // <<< "top indices", larges >>>;
-    // <<< fft.fval(0), fft.fval(1), fft.fval(2), fft.fval(3) >>>;
-    // <<< s[0]$polar, s[1]$polar, s[2]$polar, s[3]$polar >>>;
-    200::ms => now;
-    // (fft.size()/2)::samp => now;
-  }
-}
-
